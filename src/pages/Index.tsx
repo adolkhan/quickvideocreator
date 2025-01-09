@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DropZone } from "@/components/DropZone";
 import { ImagePreview } from "@/components/ImagePreview";
 import { VideoSettings } from "@/components/VideoSettings";
@@ -14,6 +15,7 @@ const Index = () => {
   const [style, setStyle] = useState("modern");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleDrop = (files: File[]) => {
     setImages((prev) => [...prev, ...files]);
@@ -47,14 +49,38 @@ const Index = () => {
     }
 
     setIsGenerating(true);
-    // TODO: Implement actual video generation
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setIsGenerating(false);
     
-    toast({
-      title: "Video generated!",
-      description: "Your video has been generated successfully",
-    });
+    try {
+      const formData = new FormData();
+      images.forEach((image, index) => {
+        formData.append(`image${index}`, image);
+      });
+      formData.append("prompt", prompt);
+      formData.append("duration", duration.toString());
+      formData.append("style", style);
+
+      const response = await fetch("http://localhost:5000/api/generate-video", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      navigate("/storyboard", { 
+        state: { 
+          videoUrl: data.videoUrl,
+          storyboardFrames: data.storyboardFrames
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate video. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
