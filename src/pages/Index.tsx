@@ -59,10 +59,21 @@ const Index = () => {
       formData.append("duration", duration.toString());
       formData.append("style", style);
 
+      console.log("Sending request with form data:", {
+        prompt,
+        duration,
+        style,
+        imageCount: images.length,
+      });
+
       const response = await fetch("http://localhost:5000/api/generate-video", {
         method: "POST",
         body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       
@@ -73,6 +84,7 @@ const Index = () => {
         }
       });
     } catch (error) {
+      console.error("Error generating video:", error);
       toast({
         title: "Error",
         description: "Failed to generate video. Please try again.",
