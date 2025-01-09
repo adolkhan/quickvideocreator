@@ -4,7 +4,7 @@ import os
 import time
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
@@ -25,4 +25,4 @@ def generate_video():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host='0.0.0.0')
